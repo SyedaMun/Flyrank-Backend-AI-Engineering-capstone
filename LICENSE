@@ -1,0 +1,28 @@
+# Manifest for the FlyRank evaluator
+name: navigant-core
+title: "Navigant Core: The Decentralized Multi-Stream Operations Engine"
+author: Syeda Munazza Bukhari
+brief: "Your 10x Solution (merges the engineering themes of four more FlyRank briefs)"
+
+# One command boots the API once the one-time setup below has been done
+run: npm start
+
+setup:
+  - cp .env.example .env        # then set DB_PASSWORD and ADMIN_TOKEN
+  - npm install
+  - npm run db:up               # PostgreSQL in Docker
+  - npm run init                # create tables
+
+seed: npm run seed              # 12 synthetic demo learners
+test: npm test                  # 16 API tests (set ADMIN_TOKEN + DB_* in .env to run all of them)
+
+base_url: http://localhost:5000
+
+endpoints:
+  - { method: GET,  path: /api/health,                                   expect: 200 }
+  - { method: GET,  path: /api/public/impact-summary,                    expect: 200 }
+  - { method: GET,  path: "/api/public/impact-summary?year=2026&half=2", expect: 200 }
+  - { method: GET,  path: "/api/public/impact-summary?year=abc",         expect: 400 }
+  - { method: GET,  path: /api/admin/metrics,                            expect: 401, note: "200 with header X-Admin-Token" }
+  - { method: POST, path: /api/submissions,                              expect: 400, note: "invalid phone / missing delivery_mode" }
+  - { method: POST, path: /api/inquiries,                                expect: 200, note: "send bot_field to see the honeypot" }

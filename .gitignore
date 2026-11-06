@@ -1,0 +1,7 @@
+.env
+node_modules/
+postgres_data/
+master_database.csv
+*.xlsx
+*.log
+.DS_Store

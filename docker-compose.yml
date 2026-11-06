@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  navigant_db:
+    image: postgres:15-alpine
+    container_name: navigant_core_database
+    restart: always
+    environment:
+      POSTGRES_USER: navigant_admin
+      POSTGRES_PASSWORD: NavigantSecurePass123
+      POSTGRES_DB: navigant_core_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data

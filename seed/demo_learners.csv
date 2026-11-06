@@ -1,0 +1,13 @@
+Workshops,Full Name,Email Address,WhatsApp Number,Gender,Profile/Profession,City / Location,Workshop Topic,Attendance Status,Feedback Score,Initial AI Level / Interest (from form),Month,Trainer,Subtopic,Workshop Date
+Workshop-1,Sample Learner 01,sample01@example.com,0300-0000001,Prefer not to say,Student,Lahore,AI Essentials,Absent,,Beginner,October,Demo Trainer,AI Prompting Workshop,09 Oct 2026
+Workshop-1,Sample Learner 02,sample02@example.com,0300-0000002,Female,Unemployed,Karachi,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,09 Oct 2026
+Workshop-1,Sample Learner 03,sample03@example.com,0300-0000003,Female,Professional,Islamabad,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,09 Oct 2026
+Workshop-2,Sample Learner 04,sample04@example.com,0300-0000004,Female,Homemaker,Rawalpindi,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,17 Oct 2026
+Workshop-2,Sample Learner 05,sample05@example.com,0300-0000005,Female,Student,Lahore,AI Essentials,Absent,,Beginner,October,Demo Trainer,AI Prompting Workshop,17 Oct 2026
+Workshop-2,Sample Learner 06,sample06@example.com,0300-0000006,Prefer not to say,Unemployed,Karachi,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,17 Oct 2026
+Workshop-3,Sample Learner 07,sample07@example.com,0300-0000007,Female,Professional,Islamabad,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,25 Oct 2026
+Workshop-3,Sample Learner 08,sample08@example.com,0300-0000008,Female,Homemaker,Rawalpindi,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,25 Oct 2026
+Workshop-3,Sample Learner 09,sample09@example.com,0300-0000009,Female,Student,Lahore,AI Essentials,Absent,,Beginner,October,Demo Trainer,AI Prompting Workshop,25 Oct 2026
+Workshop-4,Sample Learner 10,sample10@example.com,0300-0000010,Female,Unemployed,Karachi,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,25 Oct 2026
+Workshop-4,Sample Learner 11,sample11@example.com,0300-0000011,Prefer not to say,Professional,Islamabad,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,25 Oct 2026
+Workshop-4,Sample Learner 12,sample12@example.com,0300-0000012,Female,Homemaker,Rawalpindi,AI Essentials,Attended,5,Beginner,October,Demo Trainer,AI Prompting Workshop,25 Oct 2026

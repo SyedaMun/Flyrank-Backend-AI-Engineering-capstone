@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Workshop Constellation Hub - standalone preview</title>
+<!-- Set your API address here only if this file is NOT served by your Navigant server -->
+<meta name="navigant-api-base" content="">
+<style>:root{--navy:#0f172a;--green:#047857}*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh;padding:40px 14px;
+background:radial-gradient(circle at 87% 18%,rgba(209,250,229,.9),transparent 31%),radial-gradient(circle at 4% 92%,rgba(219,234,254,.5),transparent 30%),#fff}</style>
+<style id="nvc-css">
+/* =========================================================================
+   Workshop Constellation Hub - styles (all selectors are prefixed .nvc- so
+   they can never clash with the rest of the website)
+   ========================================================================= */
+.hero-art.nvc-art{min-height:0;position:relative}
+.nvc{--a:#14f1d9;--arg:20,241,217;--hi:#8ffcee;position:relative;width:100%;max-width:620px;margin-inline:auto;text-align:left;color:#e8f2ff;font-family:inherit;line-height:1.3}
+.nvc *,.nvc *::before,.nvc *::after{box-sizing:border-box}
+.nvc button{font-family:inherit}
+.nvc-shell{position:relative;overflow:hidden;border-radius:28px;border:1px solid rgba(255,255,255,.09);
+  background:
+    radial-gradient(70% 45% at 85% 0%,rgba(var(--arg),.16),transparent 70%),
+    radial-gradient(60% 40% at 5% 100%,rgba(96,165,250,.12),transparent 70%),
+    linear-gradient(165deg,#10304a 0%,#0a1a2c 48%,#060d19 100%);
+  box-shadow:0 30px 70px rgba(15,23,42,.38),0 0 0 1px rgba(var(--arg),.06) inset;transition:box-shadow .5s}
+.nvc-shell::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:36px 36px;-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 85%);mask-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 85%)}
+
+/* ---- header + filter buttons ---- */
+.nvc-top{position:relative;z-index:3;padding:18px 18px 4px}
+.nvc-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.nvc-head b{font-size:1.02rem;font-weight:900;letter-spacing:-.2px;color:#fff}
+.nvc-head span{font-size:.7rem;color:rgba(190,208,232,.8);font-weight:600}
+.nvc-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.nvc-tab{flex:1 1 150px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:8px 12px;
+  border-radius:14px;border:1px solid rgba(var(--targ),.35);background:rgba(255,255,255,.04);color:#dbe8fa;
+  font-size:.74rem;font-weight:800;line-height:1.15;text-align:center;cursor:pointer;transition:border-color .3s,background .3s,box-shadow .3s,color .3s,transform .2s}
+.nvc-tab i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--ta);box-shadow:0 0 10px var(--ta)}
+.nvc-tab:hover{transform:translateY(-1px);border-color:var(--ta);background:rgba(var(--targ),.1)}
+.nvc-tab:focus-visible,.nvc-node:focus-visible,.nvc-core:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.nvc-tab[aria-selected="true"]{color:#fff;border-color:var(--ta);background:rgba(var(--targ),.17);
+  box-shadow:0 0 0 1px rgba(var(--targ),.5),0 0 24px rgba(var(--targ),.5),inset 0 0 16px rgba(var(--targ),.2)}
+
+/* ---- stage (canvas + core + satellites) ---- */
+.nvc-stage{position:relative;z-index:2;width:100%;height:580px;touch-action:pan-y}
+.nvc-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.nvc-core{position:absolute;left:0;top:0;z-index:3;width:var(--core,190px);height:var(--core,190px);border-radius:50%;padding:0;border:0;background:none;color:#fff;cursor:pointer;will-change:transform}
+.nvc-core-in{position:absolute;inset:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:16px 14px;text-align:center;
+  background:radial-gradient(circle at 35% 25%,rgba(var(--arg),.32),rgba(7,16,29,.97) 64%);
+  border:1.5px solid rgba(var(--arg),.75);
+  box-shadow:0 0 38px rgba(var(--arg),.5),0 0 100px rgba(var(--arg),.22),inset 0 0 30px rgba(var(--arg),.22);
+  animation:nvcBreathe 4.2s ease-in-out infinite;transition:border-color .4s,box-shadow .4s,opacity .2s,transform .2s}
+.nvc-core-in::before{content:"";position:absolute;inset:7px;border-radius:50%;border:1px dashed rgba(var(--arg),.45);animation:nvcSpin 28s linear infinite;pointer-events:none}
+.nvc-core.is-swap .nvc-core-in{opacity:.15;transform:scale(.94)}
+.nvc-lbl{max-width:88%;font-size:.55rem;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:var(--hi);line-height:1.25}
+.nvc-big{display:flex;flex-direction:column;align-items:center;line-height:1}
+.nvc-big b{font-size:2.15rem;font-weight:900;letter-spacing:-1.5px;color:#fff;text-shadow:0 0 22px rgba(var(--arg),.8)}
+.nvc-big em{font-style:normal;margin-top:3px;font-size:.52rem;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:rgba(214,228,248,.85)}
+.nvc-name{max-width:86%;font-size:.7rem;font-weight:900;line-height:1.22;color:#fff;overflow-wrap:anywhere}
+.nvc-stats{display:flex;gap:9px;justify-content:center}
+.nvc-stats span{display:flex;flex-direction:column;align-items:center;font-size:.5rem;font-weight:700;color:rgba(200,216,238,.85);letter-spacing:.2px}
+.nvc-stats b{font-size:.98rem;font-weight:900;color:var(--hi);line-height:1.1}
+.nvc-nodata{max-width:82%;font-size:.58rem;font-weight:700;line-height:1.3;color:rgba(200,216,238,.85)}
+
+/* ---- satellite bubbles ---- */
+.nvc-nodes{position:absolute;inset:0;z-index:2}
+.nvc-node{position:absolute;left:0;top:0;width:var(--nw,132px);display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 9px 9px;
+  border-radius:24px;border:1px solid rgba(var(--arg),.5);text-align:center;color:#f2f8ff;cursor:pointer;will-change:transform,opacity;
+  background:linear-gradient(160deg,rgba(15,34,54,.95),rgba(8,17,31,.97));
+  box-shadow:0 0 0 1px rgba(var(--arg),.08),0 0 18px rgba(var(--arg),.24),inset 0 0 14px rgba(var(--arg),.09);
+  transition:border-color .3s,box-shadow .3s}
+.nvc-node:hover,.nvc-node.is-sel{border-color:var(--a);box-shadow:0 0 0 1px rgba(var(--arg),.45),0 0 30px rgba(var(--arg),.6),inset 0 0 18px rgba(var(--arg),.2)}
+.nvc-node-title{font-size:.72rem;font-weight:800;line-height:1.24;color:#fff;overflow-wrap:anywhere;hyphens:auto;-webkit-hyphens:auto}
+.nvc-node-stat{font-size:.6rem;font-weight:800;color:var(--hi);letter-spacing:.2px}
+.nvc-badge{display:inline-flex;gap:5px;align-items:flex-start;max-width:100%;padding:3px 7px;border-radius:10px;text-align:left;
+  font-size:.53rem;font-weight:700;line-height:1.25;color:#c4f8da;background:rgba(16,185,129,.13);border:1px solid rgba(52,211,153,.38)}
+.nvc-badge i{flex:none;width:6px;height:6px;margin-top:3px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:nvcPulse 2.2s infinite}
+
+/* ---- footer caption ---- */
+.nvc-foot{position:relative;z-index:3;padding:6px 18px 16px;text-align:center;font-size:.64rem;font-weight:600;line-height:1.55;color:rgba(190,208,232,.78)}
+.nvc-foot b{color:#fff;font-weight:800}
+.nvc-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@keyframes nvcBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@keyframes nvcSpin{to{transform:rotate(360deg)}}
+@keyframes nvcPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.6)}70%{box-shadow:0 0 0 6px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+@media(max-width:499px){
+  .nvc-top{padding:14px 12px 2px}.nvc-head b{font-size:.95rem}
+  .nvc-tab{flex:1 1 100%;min-height:40px;font-size:.76rem}
+  .nvc-node-title{font-size:.76rem}.nvc-node-stat{font-size:.64rem}.nvc-badge{font-size:.56rem}
+  .nvc-big b{font-size:1.85rem}.nvc-foot{padding:4px 12px 14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nvc-core-in,.nvc-core-in::before,.nvc-badge i{animation:none}
+  .nvc *{transition-duration:.01ms!important}
+}
+</style></head><body>
+<div class="hero-art nvc-art">
+  <div class="nvc" id="nvc" aria-label="Workshop Constellation Hub: our workshop streams and topics">
+    <div class="nvc-shell">
+      <div class="nvc-top">
+        <div class="nvc-head"><b>Workshop Constellation</b><span>Pick a stream, then tap a bubble</span></div>
+        <div class="nvc-tabs" role="tablist" aria-label="Workshop streams">
+          <button class="nvc-tab" type="button" role="tab" id="nvc-tab-tech" data-cat="tech" aria-selected="true" aria-controls="nvc-stage" style="--ta:#14f1d9;--targ:20,241,217"><i></i><span>Tech &amp; Digital Tools</span></button>
+          <button class="nvc-tab" type="button" role="tab" id="nvc-tab-career" data-cat="career" aria-selected="false" tabindex="-1" aria-controls="nvc-stage" style="--ta:#18d46e;--targ:24,212,110"><i></i><span>Career Readiness &amp; Growth</span></button>
+          <button class="nvc-tab" type="button" role="tab" id="nvc-tab-academic" data-cat="academic" aria-selected="false" tabindex="-1" aria-controls="nvc-stage" style="--ta:#8b5cf6;--targ:139,92,246"><i></i><span>Academic Elevation</span></button>
+        </div>
+      </div>
+      <div class="nvc-stage" id="nvc-stage" role="tabpanel" aria-labelledby="nvc-tab-tech">
+        <canvas class="nvc-canvas" id="nvc-canvas" aria-hidden="true"></canvas>
+        <div class="nvc-nodes" id="nvc-nodes"></div>
+        <button class="nvc-core" id="nvc-core" type="button" aria-label="Stream totals. Press to clear the selected module."><div class="nvc-core-in" id="nvc-core-in"></div></button>
+      </div>
+      <div class="nvc-foot" id="nvc-foot"></div>
+      <div class="nvc-sr" id="nvc-live" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<script id="nv-data">
+/* =========================================================================
+   NAVIGANT DATA - the ONE place for your workshop history.
+   Used by BOTH the Workshop Constellation widget and the "Our Impact" filters.
+   Source: MY_ALL_PAST_DATA_-COMMUNTY_WORKSHOPS_DEILVERED_1.xlsx (Master Dataset, 2019 - 2026)
+
+   rows[]  one line per workshop block:
+           year, half ("H1" = Jan - Jun, "H2" = Jul - Dec), stream, topic, batches, learners,
+           mode ("in_person" | "online"), vt (volunteer trainers), interns (active interns)
+   HOURS ARE NEVER TYPED IN. They are always calculated:  in_person = batches x 5  |  online = batches x 2
+           (the same rule the server uses for live registrations).
+   To add a new block of workshops later, just add one more line to rows[].
+
+   mergeLive: true  = "Till Now" and the year/half filters ADD the live database figures on top of these rows.
+              false = show only the rows below (use this if the live database workshops are ALREADY listed below,
+              otherwise they would be counted twice).
+   ========================================================================= */
+window.NAVIGANT_HISTORY = {
+  label: "2019 \u2013 till now",
+  mergeLive: true,
+  hoursPerBatch: { in_person: 5, online: 2 },
+  halves: { H1: "Jan - Jun (H1)", H2: "Jul - Dec (H2)" },
+  streams: [
+    { id: "tech", label: "Tech & Digital Tools", topics: [
+      "AI Essentials & Prompt Engineering", "Graphic Designing", "Social Media Management & Digital Marketing",
+      "Coding Classes (Python & JavaScript)", "Game Development", "Website Development" ] },
+    { id: "career", label: "Career Readiness & Growth", topics: [
+      "Professional Resume Making & Job Search Strategies", "Ace Your Interview Preparation", "Motivational & Leadership Coaching",
+      "Profile Building & Personal Branding", "Public Speaking & Communication Skills" ] },
+    { id: "academic", label: "Academic Elevation", topics: [
+      "University Application Strategies", "How to Secure Global Scholarships", "IELTS Preparation Training",
+      "English Language Training / Spoken English", "Academic Writing & Research Skills", "Statement of Purpose / Personal Statement guidance" ] }
+  ],
+  rows: [
+    { year: 2019, half: "H1", stream: "tech", topic: "AI Essentials & Prompt Engineering", batches: 1, learners: 13, mode: "in_person", vt: 1, interns: 2 },
+    { year: 2019, half: "H1", stream: "career", topic: "Professional Resume Making & Job Search Strategies", batches: 1, learners: 14, mode: "online", vt: 1, interns: 2 },
+    { year: 2019, half: "H2", stream: "academic", topic: "University Application Strategies", batches: 1, learners: 12, mode: "in_person", vt: 1, interns: 2 },
+    { year: 2020, half: "H1", stream: "tech", topic: "Graphic Designing", batches: 1, learners: 15, mode: "online", vt: 1, interns: 2 },
+    { year: 2020, half: "H2", stream: "career", topic: "Ace Your Interview Preparation", batches: 1, learners: 15, mode: "online", vt: 2, interns: 3 },
+    { year: 2020, half: "H2", stream: "academic", topic: "How to Secure Global Scholarships", batches: 1, learners: 14, mode: "in_person", vt: 1, interns: 2 },
+    { year: 2021, half: "H1", stream: "tech", topic: "Social Media Management & Digital Marketing", batches: 1, learners: 18, mode: "online", vt: 2, interns: 3 },
+    { year: 2021, half: "H1", stream: "career", topic: "Motivational & Leadership Coaching", batches: 1, learners: 12, mode: "in_person", vt: 1, interns: 3 },
+    { year: 2021, half: "H2", stream: "academic", topic: "IELTS Preparation Training", batches: 1, learners: 18, mode: "online", vt: 2, interns: 1 },
+    { year: 2022, half: "H1", stream: "tech", topic: "Coding Classes (Python & JavaScript)", batches: 1, learners: 15, mode: "in_person", vt: 2, interns: 2 },
+    { year: 2022, half: "H2", stream: "career", topic: "Profile Building & Personal Branding", batches: 2, learners: 33, mode: "online", vt: 2, interns: 1 },
+    { year: 2022, half: "H2", stream: "academic", topic: "English Language Training / Spoken English", batches: 2, learners: 29, mode: "in_person", vt: 3, interns: 3 },
+    { year: 2023, half: "H1", stream: "tech", topic: "Game Development", batches: 1, learners: 11, mode: "online", vt: 2, interns: 1 },
+    { year: 2023, half: "H1", stream: "career", topic: "Public Speaking & Communication Skills", batches: 2, learners: 27, mode: "in_person", vt: 2, interns: 2 },
+    { year: 2023, half: "H2", stream: "academic", topic: "Academic Writing & Research Skills", batches: 4, learners: 39, mode: "online", vt: 3, interns: 3 },
+    { year: 2024, half: "H1", stream: "tech", topic: "Website Development", batches: 2, learners: 23, mode: "in_person", vt: 3, interns: 1 },
+    { year: 2024, half: "H2", stream: "career", topic: "Professional Resume Making & Job Search Strategies", batches: 3, learners: 34, mode: "online", vt: 4, interns: 1 },
+    { year: 2024, half: "H2", stream: "academic", topic: "Statement of Purpose / Personal Statement guidance", batches: 4, learners: 41, mode: "in_person", vt: 5, interns: 2 },
+    { year: 2025, half: "H1", stream: "tech", topic: "AI Essentials & Prompt Engineering", batches: 3, learners: 27, mode: "online", vt: 3, interns: 2 },
+    { year: 2025, half: "H1", stream: "career", topic: "Ace Your Interview Preparation", batches: 2, learners: 19, mode: "in_person", vt: 4, interns: 1 },
+    { year: 2025, half: "H2", stream: "academic", topic: "Academic Writing & Research Skills", batches: 2, learners: 17, mode: "online", vt: 3, interns: 2 },
+    { year: 2026, half: "H1", stream: "tech", topic: "AI Essentials & Prompt Engineering", batches: 3, learners: 34, mode: "in_person", vt: 3, interns: 1 },
+    { year: 2026, half: "H1", stream: "career", topic: "Professional Resume Making & Job Search Strategies", batches: 3, learners: 31, mode: "online", vt: 2, interns: 2 },
+    { year: 2026, half: "H2", stream: "academic", topic: "IELTS Preparation Training", batches: 4, learners: 42, mode: "in_person", vt: 2, interns: 1 },
+    { year: 2026, half: "H2", stream: "academic", topic: "Academic Writing & Research Skills", batches: 3, learners: 24, mode: "online", vt: 3, interns: 1 },
+    { year: 2026, half: "H2", stream: "career", topic: "Professional Resume Making & Job Search Strategies", batches: 1, learners: 8, mode: "in_person", vt: 3, interns: 1 },
+    { year: 2026, half: "H2", stream: "tech", topic: "AI Essentials & Prompt Engineering", batches: 3, learners: 29, mode: "online", vt: 3, interns: 1 }
+  ]
+};
+
+/* Shared helpers: live-data fetch (one cached request shared by widget + Our Impact) and the hour formula */
+window.NavigantData = (function () {
+  "use strict";
+  var H = window.NAVIGANT_HISTORY;
+  function base() {
+    var m = document.querySelector('meta[name="navigant-api-base"]');
+    if (m && m.content.trim()) return m.content.trim().replace(/\/+$/, "");
+    if (window.NAVIGANT_API_BASE) return String(window.NAVIGANT_API_BASE).replace(/\/+$/, "");
+    if (location.protocol === "file:") return "http://localhost:5000";
+    var h = location.hostname;
+    if ((h === "localhost" || h === "127.0.0.1") && location.port && location.port !== "5000") return "http://localhost:5000";
+    return "";
+  }
+  var cache = {};
+  /* live(year, half): half = 1 (Jan - Jun) or 2 (Jul - Dec) */
+  function live(year, half) {
+    var key = (year || "") + "-" + (year && half ? half : ""), hit = cache[key];
+    if (hit && Date.now() - hit.t < 45000) return hit.p;
+    var qs = [];
+    if (year) { qs.push("year=" + encodeURIComponent(year)); if (half) qs.push("half=" + encodeURIComponent(half)); }
+    var p = fetch(base() + "/api/public/impact-summary" + (qs.length ? "?" + qs.join("&") : ""), { headers: { Accept: "application/json" } })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+    cache[key] = { t: Date.now(), p: p };
+    p.catch(function () { delete cache[key]; });
+    return p;
+  }
+  function hours(mode, batches) { return batches * (H.hoursPerBatch[mode] || 0); }
+  /* rows(year, halfCode) -> matching rows. year/half optional */
+  function rows(year, half) {
+    return H.rows.filter(function (r) { return (!year || r.year === year) && (!half || r.half === half); });
+  }
+  /* summarize(rows) -> totals, per-stream totals, per-mode totals and the team (highest number active in that period) */
+  function summarize(list) {
+    var out = { learners: 0, batches: 0, hours: 0, streams: {}, modes: { in_person: { b: 0, h: 0 }, online: { b: 0, h: 0 } }, team: null };
+    ["tech", "career", "academic", "other"].forEach(function (k) { out.streams[k] = { l: 0, h: 0, b: 0 }; });
+    list.forEach(function (r) {
+      var h = hours(r.mode, r.batches), s = out.streams[r.stream] || out.streams.other;
+      out.learners += r.learners; out.batches += r.batches; out.hours += h;
+      s.l += r.learners; s.b += r.batches; s.h += h;
+      out.modes[r.mode].b += r.batches; out.modes[r.mode].h += h;
+      out.team = out.team || { vt: 0, interns: 0 };
+      out.team.vt = Math.max(out.team.vt, r.vt); out.team.interns = Math.max(out.team.interns, r.interns);
+    });
+    return out;
+  }
+  return { live: live, base: base, hours: hours, rows: rows, summarize: summarize };
+})();
+</script>
+<script id="nvc-js">
+/* =========================================================================
+   Workshop Constellation Hub - vanilla JS (ES6+), no libraries.
+   Sections:  1) DATA (edit your numbers here)   2) helpers   3) layout
+              4) nodes + core   5) canvas animation   6) events / boot
+   ========================================================================= */
+(function () {
+  "use strict";
+  const root = document.getElementById("nvc");
+  if (!root) return;
+
+  /* ====================== 1) DATA ===========================================
+     Topic names and the historical numbers live in ONE place: window.NAVIGANT_HISTORY (the "NAVIGANT DATA"
+     script just above). This widget only adds colours, and merges the LIVE database numbers (2026 onward)
+     on top, so "till now" really means till now.                                                       */
+  const BADGE = "Delivered \u2022 Available Online & In-Person";
+  const HIST = window.NAVIGANT_HISTORY || { streams: [], rows: [] };
+  const ND = window.NavigantData;
+  const LOOK = {
+    tech:     { accent: "#14f1d9", rgb: [20, 241, 217], hi: "#8ffcee" },
+    career:   { accent: "#18d46e", rgb: [24, 212, 110], hi: "#9bf5bd" },
+    academic: { accent: "#8b5cf6", rgb: [139, 92, 246], hi: "#d2c2ff" }
+  };
+  const norm = (x) => String(x || "").toLowerCase().replace(/\s+/g, " ").trim();
+  const CATEGORIES = ["tech", "career", "academic"].map((id) => {
+    const st = HIST.streams.find((x) => x.id === id) || { label: id, topics: [] };
+    return Object.assign({ id, label: st.label }, LOOK[id], {
+      // every topic = the sum of all its rows in the NAVIGANT DATA block (all years, hours from the 5 h / 2 h rule)
+      topics: st.topics.map((name) => {
+        const sm = ND.summarize(HIST.rows.filter((r) => r.topic === name));
+        return { name, live: null, hist: sm.batches ? { b: sm.batches, l: sm.learners, h: sm.hours } : null };
+      })
+    });
+  });
+  // website course names that are the same topic under a slightly different name
+  const ALIAS = {
+    "targeted ielts preparation": "ielts preparation training",
+    "professional resume making & job search": "professional resume making & job search strategies",
+    "statement of purpose / personal statement writing": "statement of purpose / personal statement guidance"
+  };
+  // combined (history + live) numbers are written onto every topic here
+  function recalc() {
+    CATEGORIES.forEach((c) => c.topics.forEach((t) => {
+      const parts = [t.hist, t.live].filter(Boolean);
+      if (!parts.length) { delete t.batches; delete t.learners; delete t.hours; return; }
+      t.batches = parts.reduce((a, p) => a + p.b, 0);
+      t.learners = parts.reduce((a, p) => a + p.l, 0);
+      t.hours = parts.reduce((a, p) => a + p.h, 0);
+    }));
+  }
+  recalc();
+
+  /* ====================== 2) helpers ====================================== */
+  const $ = (id) => document.getElementById(id);
+  const stage = $("nvc-stage"), canvas = $("nvc-canvas"), nodesEl = $("nvc-nodes"),
+        coreEl = $("nvc-core"), coreIn = $("nvc-core-in"), liveEl = $("nvc-live"), footEl = $("nvc-foot");
+  const tabs = Array.from(root.querySelectorAll(".nvc-tab"));
+  const ctx = canvas.getContext ? canvas.getContext("2d") : null;
+  const mq = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+  const fmt = (n) => Number(n).toLocaleString("en-US");
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const hasData = (t) => t && t.batches != null;
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const easeBack = (t) => { const c = 1.5; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+
+  function totals(cat) {
+    const t = { modules: cat.topics.length, withData: 0, batches: 0, learners: 0, hours: 0 };
+    cat.topics.forEach((x) => { if (hasData(x)) { t.withData++; t.batches += x.batches; t.learners += x.learners; t.hours += x.hours; } });
+    return t;
+  }
+
+  const S = {
+    cat: null, sel: -1, hover: -1, nodes: [], W: 0, H: 0, dpr: 1, orbit: true,
+    core: { x: 0, y: 0, size: 190 }, rgb: CATEGORIES[0].rgb.slice(), target: CATEGORIES[0].rgb.slice(),
+    particles: [], ptr: { x: -999, y: -999 }, running: false, visible: true, last: 0, raf: 0, timer: 0
+  };
+  const reduced = () => !!mq.matches;
+
+  /* ====================== 3) layout ======================================= */
+  /* Pure function: given the stage width and the size of one bubble it returns the stage height,
+     the core position and one (x,y) per bubble. Wide stage = orbit (ellipse), narrow = tidy 2-column grid. */
+  function computeLayout(W, n, nw, nh) {
+    const orbit = W >= 500, pts = [];
+    if (orbit) {
+      const H = Math.round(clamp(W * 1.1, 560, 640));
+      const size = Math.round(clamp(W * 0.35, 150, 196));
+      const cx = W / 2, cy = H / 2, rx = (W - nw) / 2 - 6, ry = (H - nh) / 2 - 6;
+      for (let i = 0; i < n; i++) {
+        const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+        pts.push({ x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) });
+      }
+      return { orbit, H, core: { x: cx, y: cy, size }, pts };
+    }
+    const size = 156, gap = 12, top = 12, rows = Math.ceil(n / 2);
+    const x0 = (W - (2 * nw + gap)) / 2, startY = top + size + 26 + nh / 2;
+    for (let i = 0; i < n; i++) {
+      const row = Math.floor(i / 2), col = i % 2, lonely = row === rows - 1 && n % 2 === 1;
+      pts.push({ x: lonely ? W / 2 : x0 + col * (nw + gap) + nw / 2, y: startY + row * (nh + gap) });
+    }
+    return { orbit, H: Math.round(startY + (rows - 1) * (nh + gap) + nh / 2 + 14), core: { x: W / 2, y: top + size / 2, size }, pts };
+  }
+
+  function relayout() {
+    const W = Math.round(stage.clientWidth);
+    if (!W || !S.nodes.length) return;
+    const orbit = W >= 500;
+    const nw = orbit ? Math.round(clamp(W * 0.245, 120, 150)) : Math.floor((W - 36) / 2);
+    stage.style.setProperty("--nw", nw + "px");
+    let nh = 0;
+    S.nodes.forEach((n) => { nh = Math.max(nh, n.el.offsetHeight); });
+    nh = nh || 112;
+    const L = computeLayout(W, S.nodes.length, nw, nh);
+    S.W = W; S.H = L.H; S.orbit = L.orbit; S.core = L.core; S.nw = nw; S.nh = nh;
+    stage.style.height = L.H + "px";
+    stage.style.setProperty("--core", L.core.size + "px");
+    coreEl.style.transform = "translate3d(" + (L.core.x - L.core.size / 2) + "px," + (L.core.y - L.core.size / 2) + "px,0)";
+    S.nodes.forEach((n, i) => { n.bx = L.pts[i].x; n.by = L.pts[i].y; });
+    S.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * S.dpr); canvas.height = Math.round(L.H * S.dpr);
+    initParticles();
+    place(0);
+    requestDrawIfIdle();
+  }
+
+  /* ====================== 4) nodes + core ================================= */
+  function applyTheme(cat) {
+    root.style.setProperty("--a", cat.accent);
+    root.style.setProperty("--arg", cat.rgb.join(","));
+    root.style.setProperty("--hi", cat.hi);
+    S.target = cat.rgb.slice();
+    if (reduced()) S.rgb = cat.rgb.slice();
+  }
+
+  function buildNodes(cat) {
+    nodesEl.textContent = "";
+    S.nodes = cat.topics.map((t, i) => {
+      const el = document.createElement("button");
+      el.type = "button"; el.className = "nvc-node"; el.setAttribute("aria-pressed", "false");
+      const title = document.createElement("span"); title.className = "nvc-node-title"; title.textContent = t.name; el.appendChild(title);
+      if (hasData(t)) {
+        const st = document.createElement("span"); st.className = "nvc-node-stat";
+        st.textContent = fmt(t.learners) + " learners \u00b7 " + fmt(t.hours) + " hrs"; el.appendChild(st);
+      }
+      const b = document.createElement("span"); b.className = "nvc-badge";
+      b.appendChild(document.createElement("i"));
+      b.appendChild(document.createTextNode(BADGE)); el.appendChild(b);
+      el.style.opacity = "0";
+      el.addEventListener("click", (e) => { e.stopPropagation(); select(S.sel === i ? -1 : i); });
+      el.addEventListener("pointerenter", () => { S.hover = i; kick(); });
+      el.addEventListener("pointerleave", () => { if (S.hover === i) S.hover = -1; kick(); });
+      el.addEventListener("focus", () => { S.hover = i; kick(); });
+      el.addEventListener("blur", () => { if (S.hover === i) S.hover = -1; kick(); });
+      nodesEl.appendChild(el);
+      return { el, t, i, bx: 0, by: 0, x: 0, y: 0, e: 0, goal: 1, wait: 140 + i * 90, ph: i * 1.7 + 0.6, hov: 0, a: 0 };
+    });
+    if (reduced()) S.nodes.forEach((n) => { n.e = 1; n.wait = 0; });
+  }
+
+  function countUp(el, to) {
+    cancelAnimationFrame(el._raf);
+    if (reduced()) { el.textContent = fmt(to); return; }
+    const t0 = performance.now(), dur = 750;
+    const tick = (now) => {
+      const p = clamp((now - t0) / dur, 0, 1);
+      el.textContent = fmt(Math.round(to * easeOut(p)));
+      if (p < 1) el._raf = requestAnimationFrame(tick);
+    };
+    el._raf = requestAnimationFrame(tick);
+  }
+
+  function mk(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function statCell(value, label) { const s = mk("span"); s.appendChild(mk("b", "", fmt(value))); s.appendChild(document.createTextNode(label)); return s; }
+
+  function renderCore() {
+    const cat = S.cat, t = cat.topics[S.sel];
+    coreIn.textContent = "";
+    let say;
+    if (S.sel >= 0) {
+      coreIn.appendChild(mk("span", "nvc-lbl", "Selected module"));
+      coreIn.appendChild(mk("span", "nvc-name", t.name));
+      if (hasData(t)) {
+        const st = mk("span", "nvc-stats");
+        st.appendChild(statCell(t.batches, "batches")); st.appendChild(statCell(t.learners, "learners")); st.appendChild(statCell(t.hours, "hours"));
+        coreIn.appendChild(st);
+        say = t.name + ": " + t.batches + " batches, " + t.learners + " learners, " + t.hours + " hours.";
+      } else {
+        coreIn.appendChild(mk("span", "nvc-nodata", "Delivered \u2022 detailed figures are being added."));
+        say = t.name + ": detailed figures are being added.";
+      }
+    } else {
+      const tot = totals(cat);
+      coreIn.appendChild(mk("span", "nvc-lbl", cat.label));
+      const big = mk("span", "nvc-big"), num = mk("b", "", "0");
+      big.appendChild(num); big.appendChild(mk("em", "", "hours delivered")); coreIn.appendChild(big);
+      const st = mk("span", "nvc-stats");
+      st.appendChild(statCell(tot.modules, "modules")); st.appendChild(statCell(tot.batches, "batches")); st.appendChild(statCell(tot.learners, "learners"));
+      coreIn.appendChild(st);
+      countUp(num, tot.hours);
+      say = cat.label + ": " + tot.modules + " modules, " + tot.batches + " batches, " + tot.learners + " learners, " + tot.hours + " hours delivered.";
+    }
+    liveEl.textContent = say;
+  }
+
+  function select(i) {
+    S.sel = i;
+    S.nodes.forEach((n, k) => { n.el.classList.toggle("is-sel", k === i); n.el.setAttribute("aria-pressed", k === i ? "true" : "false"); });
+    renderCore(); kick();
+  }
+
+  function setCategory(id, initial) {
+    const cat = CATEGORIES.find((c) => c.id === id) || CATEGORIES[0];
+    if (!initial && S.cat === cat) return;
+    S.cat = cat; S.sel = -1; S.hover = -1;
+    applyTheme(cat);
+    tabs.forEach((b) => {
+      const on = b.dataset.cat === cat.id;
+      b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1;
+      if (on) stage.setAttribute("aria-labelledby", b.id);
+    });
+    const rebuild = () => {
+      buildNodes(cat); relayout(); renderCore(); coreEl.classList.remove("is-swap"); kick();
+    };
+    clearTimeout(S.timer);
+    if (initial || reduced() || !S.nodes.length) { rebuild(); return; }
+    coreEl.classList.add("is-swap");
+    S.nodes.forEach((n) => { n.goal = 0; n.wait = 0; });
+    S.timer = setTimeout(rebuild, 260);
+    kick();
+  }
+
+  /* ====================== 5) canvas animation ============================= */
+  function initParticles() {
+    const count = Math.round(clamp((S.W * S.H) / 9500, 24, 64));
+    S.particles = [];
+    for (let i = 0; i < count; i++) {
+      const bubble = Math.random() < 0.3;
+      S.particles.push({
+        x: Math.random() * S.W, y: Math.random() * S.H, bubble,
+        r: bubble ? 5 + Math.random() * 11 : 0.8 + Math.random() * 1.5,
+        vy: -(7 + Math.random() * 16), vx: (Math.random() - 0.5) * 6, sw: 0.6 + Math.random() * 1.2, ph: Math.random() * 6.28,
+        a: bubble ? 1 : 0.25 + Math.random() * 0.5
+      });
+    }
+  }
+
+  const rgba = (a, c) => { c = c || S.rgb; return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + a + ")"; };
+
+  /* position, scale and opacity of every bubble for time ts (also moves the real DOM elements) */
+  function place(ts) {
+    if (!S.nw) return;
+    const still = reduced();
+    S.nodes.forEach((n, i) => {
+      const e = easeBack(clamp(n.e, 0, 1)), vis = clamp(n.e, 0, 1);
+      const bx = still ? 0 : Math.sin(ts * 0.0007 + n.ph) * 4, by = still ? 0 : Math.cos(ts * 0.0009 + n.ph * 1.3) * 5;
+      n.x = S.core.x + (n.bx - S.core.x) * e + bx * vis;
+      n.y = S.core.y + (n.by - S.core.y) * e + by * vis;
+      const focus = S.hover === i || S.sel === i;
+      n.hov += ((focus ? 1 : 0) - n.hov) * 0.18;
+      n.a = vis * (S.sel >= 0 && S.sel !== i ? 0.55 : 1);
+      const sc = (0.55 + 0.45 * Math.min(e, 1)) * (1 + 0.06 * n.hov);
+      n.el.style.transform = "translate3d(" + (n.x - S.nw / 2) + "px," + (n.y - S.nh / 2) + "px,0) scale(" + sc.toFixed(3) + ")";
+      n.el.style.opacity = n.a.toFixed(3);
+      n.el.style.pointerEvents = n.goal && vis > 0.6 ? "auto" : "none";
+    });
+  }
+
+  function step(dt, ts) {
+    const k = reduced() ? 1 : 0.07;
+    for (let c = 0; c < 3; c++) S.rgb[c] += (S.target[c] - S.rgb[c]) * k;
+    S.nodes.forEach((n) => {
+      if (n.wait > 0) { n.wait -= dt; return; }
+      n.e = clamp(n.e + (n.goal ? dt / 520 : -dt / 220), 0, 1);
+    });
+    if (!reduced()) {
+      const px = S.ptr.x, py = S.ptr.y, s = dt / 1000;
+      S.particles.forEach((p) => {
+        p.x += (p.vx + Math.sin(ts * 0.0006 * p.sw + p.ph) * 9) * s; p.y += p.vy * s;
+        const dx = p.x - px, dy = p.y - py, d2 = dx * dx + dy * dy;
+        if (d2 < 12100 && d2 > 0.01) { const d = Math.sqrt(d2), f = (1 - d / 110) * 150 * s; p.x += (dx / d) * f; p.y += (dy / d) * f; }
+        if (p.y < -24) { p.y = S.H + 24; p.x = Math.random() * S.W; }
+        if (p.x < -24) p.x = S.W + 24; else if (p.x > S.W + 24) p.x = -24;
+      });
+    }
+    place(ts);
+  }
+
+  function draw(ts) {
+    if (!ctx || !S.W) return;
+    ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+    ctx.clearRect(0, 0, S.W, S.H);
+
+    // floating dots + bubbles
+    S.particles.forEach((p) => {
+      if (p.bubble) {
+        const g = ctx.createRadialGradient(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.1, p.x, p.y, p.r);
+        g.addColorStop(0, "rgba(255,255,255,.20)"); g.addColorStop(0.6, rgba(0.08)); g.addColorStop(1, rgba(0.02));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+        ctx.strokeStyle = rgba(0.22); ctx.lineWidth = 1; ctx.stroke();
+      } else {
+        ctx.fillStyle = rgba(p.a * 0.8); ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+      }
+    });
+
+    // glow behind the core
+    const pulse = reduced() ? 0 : Math.sin(ts * 0.002) * 0.04;
+    const cg = ctx.createRadialGradient(S.core.x, S.core.y, S.core.size * 0.3, S.core.x, S.core.y, S.core.size * 1.45);
+    cg.addColorStop(0, rgba(0.30 + pulse)); cg.addColorStop(1, rgba(0));
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(S.core.x, S.core.y, S.core.size * 1.45, 0, 6.2832); ctx.fill();
+
+    const anyFocus = S.hover >= 0 || S.sel >= 0;
+    // faint web between neighbouring satellites (orbit mode only)
+    if (S.orbit && S.nodes.length > 2) {
+      ctx.lineWidth = 1; ctx.shadowBlur = 0;
+      S.nodes.forEach((n, i) => {
+        const m = S.nodes[(i + 1) % S.nodes.length], a = Math.min(n.a, m.a) * 0.16;
+        if (a < 0.01) return;
+        ctx.strokeStyle = rgba(a); ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(m.x, m.y); ctx.stroke();
+      });
+    }
+
+    // glowing core -> satellite lines + travelling light pulses
+    S.nodes.forEach((n, i) => {
+      if (n.a < 0.01) return;
+      const hot = S.hover === i || S.sel === i, dim = anyFocus && !hot;
+      const alpha = (hot ? 1 : dim ? 0.3 : 0.62) * Math.min(1, n.a * 1.2);
+      const g = ctx.createLinearGradient(S.core.x, S.core.y, n.x, n.y);
+      g.addColorStop(0, rgba(alpha * 0.25)); g.addColorStop(1, rgba(alpha));
+      ctx.strokeStyle = g; ctx.lineWidth = hot ? 2.6 : 1.5;
+      ctx.shadowColor = rgba(0.9); ctx.shadowBlur = hot ? 20 : 9;
+      ctx.beginPath(); ctx.moveTo(S.core.x, S.core.y); ctx.lineTo(n.x, n.y); ctx.stroke();
+      ctx.shadowBlur = 0;
+      if (!reduced() && n.e > 0.9) {
+        const u = (ts * 0.00032 + i * 0.19) % 1;
+        const px = S.core.x + (n.x - S.core.x) * u, py = S.core.y + (n.y - S.core.y) * u;
+        ctx.fillStyle = rgba(hot ? 1 : 0.85); ctx.shadowColor = rgba(1); ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.arc(px, py, hot ? 3 : 2.2, 0, 6.2832); ctx.fill(); ctx.shadowBlur = 0;
+      }
+    });
+  }
+
+  /* ---- loop control: runs only while the widget is on screen and the tab is visible ---- */
+  function frame(ts) {
+    if (!S.running) return;
+    const dt = Math.min(50, S.last ? ts - S.last : 16); S.last = ts;
+    step(dt, ts); draw(ts);
+    S.raf = requestAnimationFrame(frame);
+  }
+  function start() {
+    if (S.running || reduced() || !S.visible || document.hidden || !ctx) return;
+    S.running = true; S.last = 0; S.raf = requestAnimationFrame(frame);
+  }
+  function stop() { S.running = false; cancelAnimationFrame(S.raf); }
+  function drawOnce() { step(16, 0); draw(0); }
+  function requestDrawIfIdle() { if (!S.running) requestAnimationFrame(drawOnce); }
+  function kick() { if (reduced()) requestDrawIfIdle(); else start(); }
+
+  /* ====================== 6) events / boot ================================ */
+  tabs.forEach((b, i) => {
+    b.addEventListener("click", () => setCategory(b.dataset.cat));
+    b.addEventListener("keydown", (e) => {
+      let j = -1;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") j = (i + 1) % tabs.length;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") j = (i + tabs.length - 1) % tabs.length;
+      else if (e.key === "Home") j = 0; else if (e.key === "End") j = tabs.length - 1;
+      if (j >= 0) { e.preventDefault(); tabs[j].focus(); setCategory(tabs[j].dataset.cat); }
+    });
+  });
+  coreEl.addEventListener("click", () => { if (S.sel >= 0) select(-1); });
+  stage.addEventListener("click", () => { if (S.sel >= 0) select(-1); });
+  root.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.sel >= 0) select(-1); });
+  stage.addEventListener("pointermove", (e) => { const r = stage.getBoundingClientRect(); S.ptr.x = e.clientX - r.left; S.ptr.y = e.clientY - r.top; });
+  stage.addEventListener("pointerleave", () => { S.ptr.x = S.ptr.y = -999; });
+  document.addEventListener("visibilitychange", () => { document.hidden ? stop() : start(); });
+
+  if ("ResizeObserver" in window) {
+    let lastW = 0;
+    new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW = w; requestAnimationFrame(relayout); } }).observe(stage);
+  } else window.addEventListener("resize", () => requestAnimationFrame(relayout));
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver((en) => { S.visible = en[0].isIntersecting; S.visible ? start() : stop(); }, { threshold: 0.05 }).observe(root);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(relayout));
+  if (mq.addEventListener) mq.addEventListener("change", () => { stop(); kick(); });
+
+  // footer caption (computed from the data above)
+  function renderFoot() {
+    const all = { n: 0, w: 0, b: 0, l: 0, h: 0 };
+    CATEGORIES.forEach((c) => { const t = totals(c); all.n += t.modules; all.w += t.withData; all.b += t.batches; all.l += t.learners; all.h += t.hours; });
+    footEl.textContent = "";
+    footEl.appendChild(document.createTextNode("Community workshops delivered 2019 \u2013 till now \u00b7 All streams: "));
+    footEl.appendChild(mk("b", "", fmt(all.b) + " batches \u00b7 " + fmt(all.l) + " learners \u00b7 " + fmt(all.h) + " hours"));
+    footEl.appendChild(mk("br"));
+    footEl.appendChild(document.createTextNode(all.w === all.n
+      ? "Figures cover all " + all.n + " workshop modules."
+      : "Totals cover the " + all.w + " of " + all.n + " modules with recorded history; the rest are being added."));
+  }
+  renderFoot();
+
+  // add the live database numbers (2026 onward) on top of the history
+  function mergeLive(rows) {
+    const byName = new Map();
+    CATEGORIES.forEach((c) => c.topics.forEach((t) => { t.live = null; byName.set(norm(t.name), t); }));
+    (rows || []).forEach((r) => {
+      const key = norm(r.track), t = byName.get(key) || byName.get(ALIAS[key]);
+      if (!t) return;                                   // a live course that is not one of the 17 topics
+      t.live = t.live || { b: 0, l: 0, h: 0 };
+      t.live.b += r.batches || 0; t.live.l += r.learners || 0; t.live.h += r.hours || 0;
+    });
+    recalc();
+  }
+  if (window.NavigantData && HIST.mergeLive !== false) {
+    window.NavigantData.live().then((d) => {
+      mergeLive(d && d.by_track);
+      S.liveOk = true; renderFoot();
+      if (S.cat) { if (S.sel < 0) { buildNodes(S.cat); relayout(); } renderCore(); kick(); }
+    }).catch(() => { /* offline: the widget simply keeps showing the history */ });
+  }
+
+  window.NavigantConstellation = { setCategory: (id) => setCategory(id), select, layout: computeLayout, data: CATEGORIES, mergeLive };
+  setCategory("tech", true);
+})();
+</script></body></html>
